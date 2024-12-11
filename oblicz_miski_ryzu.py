@@ -53,7 +53,6 @@ def calculate_current_value(amount, start_date, end_date, inflation_data, ppi_da
     
     return round(current_value, 2)
 
-
 def compare_rice_purchasing_power(price_2024, start_date, end_date, inflation_data):
     """
     Compare how much rice you could buy before and after inflation
@@ -70,14 +69,17 @@ def compare_rice_purchasing_power(price_2024, start_date, end_date, inflation_da
     kg_max_2023 = kg_max_2024 / value_change
     
     return {
-        '2023_min': kg_min_2023,
-        '2023_max': kg_max_2023,
-        '2024_min': kg_min_2024,
-        '2024_max': kg_max_2024,
+        'start_year_min': kg_min_2023,
+        'start_year_max': kg_max_2023,
+        'end_year_min': kg_min_2024,
+        'end_year_max': kg_max_2024,
         'value_change': value_change
     }
 
-# 2024-12-10 https://www.selinawamucii.com/insights/prices/poland/rice/
+# Aktualna data dla celów dynamicznych
+today = datetime.today().strftime('%Y-%m-%d')
+
+# https://www.selinawamucii.com/insights/prices/poland/rice/
 rice_prices = {
     'kg_min': 3.68,
     'kg_max': 10.11,
@@ -85,6 +87,7 @@ rice_prices = {
     'lb_max': 4.59
 }
 
+# Inflation data
 inflation_data = {
     '2021': [2.6, 2.4, 3.2, 4.3, 4.7, 4.4, 5.0, 5.5, 5.9, 6.8, 7.8, 8.6],
     '2022': [9.4, 8.5, 11.0, 12.4, 13.9, 15.5, 15.6, 16.1, 17.2, 17.9, 17.5, 16.6],
@@ -92,23 +95,29 @@ inflation_data = {
     '2024': [3.7, 2.8, 2.0, 2.4, 2.5, 2.6, 4.2, 4.3, 4.9, 5.0, 4.6, 4.6]
 }
 
-initial_amount = 65
-start_date = '2023-01'
-end_date = '2024-12'
+initial_amount = 22.50
+start_date = '2021-01'
+end_date = datetime.today().strftime('%Y-%m')
 
+# Calculate current value
 result = calculate_current_value(initial_amount, start_date, end_date, inflation_data)
 comparison = compare_rice_purchasing_power(rice_prices, start_date, end_date, inflation_data)
 
-print(f"{initial_amount} PLN z {start_date} jest warte {result} PLN w {end_date}")
+# Extract the years from the dates
+start_year = start_date[:4]
+end_year = end_date[:4]
 
-print(f"\nPorównanie siły nabywczej (ryż):")
-print(f"W styczniu 2023 1 kg ryżu kosztował: {comparison['2023_min']:.2f} - {comparison['2023_max']:.2f} PLN")
-print(f"W grudniu 2024 1 kg ryżu kosztuje: {comparison['2024_min']:.2f} - {comparison['2024_max']:.2f} PLN")
+# Output the results
+print(f"{initial_amount} PLN from {start_year} is worth {result} PLN in {end_year}")
 
-print("\nInaczej mówiąc:")
-print(f"Jeśli w styczniu 2023 kupiłeś 1 kg ryżu za {comparison['2023_max']:.2f} PLN (najdroższy),")
-print(f"to dziś za tę samą kwotę (po inflacji) kupisz tylko {(comparison['value_change']/comparison['2024_max']*1000):.0f} gramów ryżu")
+print(f"\nComparison of purchasing power (rice):")
+print(f"In January {start_year}, 1 kg of rice cost: {comparison['start_year_min']:.2f} - {comparison['start_year_max']:.2f} PLN")
+print(f"In December {end_year}, 1 kg of rice costs: {comparison['end_year_min']:.2f} - {comparison['end_year_max']:.2f} PLN")
 
-print("\nLub odwrotnie:")
-print(f"Żeby kupić 1 kg tego samego ryżu w grudniu 2024,")
-print(f"musisz zapłacić o {((comparison['2024_max']/comparison['2023_max'] - 1)*100):.1f}% więcej niż w styczniu 2023")
+print("\nIn other words:")
+print(f"If in January {start_year} you bought 1 kg of rice for {comparison['start_year_max']:.2f} PLN (most expensive),")
+print(f"today for the same amount (adjusted for inflation) you can only buy {(comparison['value_change']/comparison['end_year_max']*1000):.0f} grams of rice")
+
+print("\nOr conversely:")
+print(f"To buy 1 kg of the same rice in December {end_year},")
+print(f"you need to pay {((comparison['end_year_max']/comparison['start_year_max'] - 1)*100):.1f}% more than in January {start_year}")
